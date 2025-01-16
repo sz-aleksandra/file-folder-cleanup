@@ -47,13 +47,13 @@ def parse_command_line_arguments():
     parser.add_argument("configuration", help="Choose configuration file")
     parser.add_argument("main_directory", help="Choose main directory")
     parser.add_argument("directories", help="Choose other directories to include", nargs="+")
-    parser.add_argument("--move_or_copy", choices=["do_nothing", "move", "copy"], default="do_nothing", help="Decide to move or copy files from other directories to main", required=False)
     parser.add_argument('--identical', choices=["do_nothing", "ask", "apply_to_all"], default="do_nothing", help='Find files with identical content', required=False)
     parser.add_argument('--empty', choices=["do_nothing", "ask", "apply_to_all"], default="do_nothing", help='Find empty files', required=False)
-    parser.add_argument('--samename', choices=["do_nothing", "ask", "apply_to_all"], default="do_nothing", help='Find files with identical content', required=False)
     parser.add_argument('--temporary', choices=["do_nothing", "ask", "apply_to_all"], default="do_nothing", help='Find files with identical content', required=False)
+    parser.add_argument('--samename', choices=["do_nothing", "ask", "apply_to_all"], default="do_nothing", help='Find files with identical content', required=False)
     parser.add_argument('--unusual_attributes', choices=["do_nothing", "ask", "apply_to_all"], default="do_nothing", help='Find files with identical content', required=False)
     parser.add_argument('--troublesome_characters', choices=["do_nothing", "ask", "apply_to_all"], default="do_nothing", help='Find files with identical content', required=False)
+    parser.add_argument("--move_or_copy", choices=["do_nothing", "move", "copy"], default="do_nothing", help="Decide to move or copy files from other directories to main", required=False)
 
     return parser.parse_args()
 
@@ -170,8 +170,10 @@ def delete_temporary(main_directory, other_directories, temporary_files_extensio
                     filepath = os.path.join(root, file)
                     if not apply_to_all:
                         if choose_action(f"Delete temporary file {filepath}?"):
+                            print(f"Deleting temporary file: {filepath}")
                             os.remove(filepath)
                     else:
+                        print(f"Deleting temporary file: {filepath}")
                         os.remove(filepath)
 
 def change_unusual_attributes(main_directory, other_directories, file_attributes, apply_to_all=False):
@@ -186,10 +188,10 @@ def change_unusual_attributes(main_directory, other_directories, file_attributes
                     if current_attributes != required_attributes:
                         if not apply_to_all:
                             if choose_action(f"Change attributes {current_attributes} for: {filepath}?"):
-                                print(f"Changing attributes for: {filepath} to {oct(file_attributes)}")
+                                print(f"Changing attributes {current_attributes} for: {filepath} to {oct(file_attributes)}")
                                 os.chmod(filepath, file_attributes)
                         else:
-                            print(f"Changing attributes for: {filepath} to {oct(file_attributes)}")
+                            print(f"Changing attributes {current_attributes} for: {filepath} to {oct(file_attributes)}")
                             os.chmod(filepath, file_attributes)
 
 def change_troublesome_characters(main_directory, other_directories, troublesome_characters, character_substitute, apply_to_all=False):
@@ -220,22 +222,22 @@ def main():
     config = read_config(configuration)
     file_attributes, troublesome_characters, character_substitute, temporary_file_extensions = parse_config(config)
 
-    if args.move_or_copy == 'move':
-        move_to_main(main_directory, other_directories)
-    if args.move_or_copy == 'copy':
-        copy_to_main(main_directory, other_directories)
     if args.identical != 'do_nothing':
         leave_old_identical(main_directory, other_directories, args.identical == 'apply_to_all')
     if args.empty != 'do_nothing':
         delete_empty(main_directory, other_directories, args.empty == 'apply_to_all')
-    if args.samename != 'do_nothing':
-        leave_new_samename(main_directory, other_directories, args.samename == 'apply_to_all')
     if args.temporary != 'do_nothing':
         delete_temporary(main_directory, other_directories, temporary_file_extensions, args.temporary == 'apply_to_all')
+    if args.samename != 'do_nothing':
+        leave_new_samename(main_directory, other_directories, args.samename == 'apply_to_all')
     if args.unusual_attributes != 'do_nothing':
         change_unusual_attributes(main_directory, other_directories, file_attributes, args.unusual_attributes == 'apply_to_all')
     if args.troublesome_characters != 'do_nothing':
         change_troublesome_characters(main_directory, other_directories, troublesome_characters, character_substitute, args.troublesome_characters == 'apply_to_all')
+    if args.move_or_copy == 'move':
+        move_to_main(main_directory, other_directories)
+    if args.move_or_copy == 'copy':
+        copy_to_main(main_directory, other_directories)
 
 if __name__ == "__main__":
     main()
