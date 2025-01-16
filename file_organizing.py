@@ -71,8 +71,9 @@ def move_to_main(main_directory, other_directories):
             for file in files:
                 source_path = os.path.join(root, file)
                 target_path = os.path.join(main_directory, file)
-                print(f"Moving {source_path} to {target_path}")
-                shutil.move(source_path, target_path)
+                if source_path != target_path:
+                    print(f"Moving {source_path} to {target_path}")
+                    shutil.move(source_path, target_path)
 
 def copy_to_main(main_directory, other_directories):
     for directory in other_directories:
@@ -80,8 +81,9 @@ def copy_to_main(main_directory, other_directories):
             for file in files:
                 source_path = os.path.join(root, file)
                 target_path = os.path.join(main_directory, file)
-                print(f"Copying {source_path} to {target_path}")
-                shutil.copy(source_path, target_path)
+                if source_path != target_path:
+                    print(f"Copying {source_path} to {target_path}")
+                    shutil.copy(source_path, target_path)
 
 def leave_old_identical(main_directory, other_directories, apply_to_all=False):
     directories = [main_directory] + other_directories
@@ -183,7 +185,7 @@ def change_unusual_attributes(main_directory, other_directories, file_attributes
                     required_attributes = oct(file_attributes)[-3:]
                     if current_attributes != required_attributes:
                         if not apply_to_all:
-                            if choose_action(f"Change attributes for: {filepath}?"):
+                            if choose_action(f"Change attributes {current_attributes} for: {filepath}?"):
                                 print(f"Changing attributes for: {filepath} to {oct(file_attributes)}")
                                 os.chmod(filepath, file_attributes)
                         else:
@@ -196,11 +198,11 @@ def change_troublesome_characters(main_directory, other_directories, troublesome
         for root, _, files in os.walk(directory):
             for file in files:
                 name, extension = os.path.splitext(file)
-                if any(char in name for char in troublesome_characters):
+                if any(char in name for char in troublesome_characters):        
+                    old_path = os.path.join(root, file)
+                    new_name = ''.join(character_substitute if char in troublesome_characters else char for char in name)
+                    new_path = os.path.join(root, new_name + extension)
                     if not apply_to_all:
-                        old_path = os.path.join(root, file)
-                        new_name = ''.join(character_substitute if char in troublesome_characters else char for char in name)
-                        new_path = os.path.join(root, new_name + extension)
                         if choose_action(f"Rename {old_path}?"):
                             print(f"Renaming {old_path} to {new_path}")
                             os.rename(old_path, new_path)
@@ -223,17 +225,17 @@ def main():
     if args.move_or_copy == 'copy':
         copy_to_main(main_directory, other_directories)
     if args.identical != 'do_nothing':
-        leave_old_identical(main_directory, other_directories, args.empty == 'apply_to_all')
+        leave_old_identical(main_directory, other_directories, args.identical == 'apply_to_all')
     if args.empty != 'do_nothing':
         delete_empty(main_directory, other_directories, args.empty == 'apply_to_all')
     if args.samename != 'do_nothing':
-        leave_new_samename(main_directory, other_directories, args.empty == 'apply_to_all')
+        leave_new_samename(main_directory, other_directories, args.samename == 'apply_to_all')
     if args.temporary != 'do_nothing':
-        delete_temporary(main_directory, other_directories, temporary_file_extensions, args.empty == 'apply_to_all')
+        delete_temporary(main_directory, other_directories, temporary_file_extensions, args.temporary == 'apply_to_all')
     if args.unusual_attributes != 'do_nothing':
-        change_unusual_attributes(main_directory, other_directories, file_attributes, args.empty == 'apply_to_all')
+        change_unusual_attributes(main_directory, other_directories, file_attributes, args.unusual_attributes == 'apply_to_all')
     if args.troublesome_characters != 'do_nothing':
-        change_troublesome_characters(main_directory, other_directories, troublesome_characters, character_substitute, args.empty == 'apply_to_all')
+        change_troublesome_characters(main_directory, other_directories, troublesome_characters, character_substitute, args.troublesome_characters == 'apply_to_all')
 
 if __name__ == "__main__":
     main()
