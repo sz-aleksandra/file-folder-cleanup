@@ -9,7 +9,7 @@ def read_config(filepath):
         with open(filepath, 'r') as f:
             return json.load(f)
     except:
-        print("Configuration file doesn't exist. Creating default configuration file...")
+        print("Configuration file doesn't exist. Creating default configuration file")
         default_config = {
     		"file_attributes": "rw-r--r--",
     		"troublesome_characters": ":\".;*?$#`|\\",
@@ -87,6 +87,7 @@ def copy_to_main(main_directory, other_directories):
 
 def leave_old_identical(main_directory, other_directories, apply_to_all=False):
     directories = [main_directory] + other_directories
+    directories = list(set(directories))
     file_hash_map = {}
     for directory in directories:
         for root, _, files in os.walk(directory):
@@ -119,6 +120,7 @@ def leave_old_identical(main_directory, other_directories, apply_to_all=False):
 
 def leave_new_samename(main_directory, other_directories, apply_to_all=False):
     directories = [main_directory] + other_directories
+    directories = list(set(directories))
     file_name_map = {}
     for directory in directories:
         for root, _, files in os.walk(directory):
