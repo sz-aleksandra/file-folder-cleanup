@@ -1,0 +1,6 @@
+{
+    "file_attributes": "rw-r--r--",
+    "troublesome_characters": ":\".;*?$#`|\\",
+    "character_substitute": "_",
+    "temporary_file_extensions": "*~, *.tmp"
+}
